@@ -12,7 +12,10 @@ describe('Board', function() {
       var conflictDetected = board['hasAny' + capitalize(conflictType) + 'Conflicts']();
       var conflictExpected = _(expectedConflicts).contains(conflictType);
       var message = conflictExpected ? 'should' : 'should not';
-
+      if (conflictExpected !== conflictDetected) {
+        console.log('conflictDetected: ' + conflictDetected + ', conflictExpected: ' + conflictExpected
+          + ', conflictType: ' + conflictType + ', board: ' + JSON.stringify(board.rows()));
+      }
       it(message + ' find a ' + conflictType + ' conflict', function() {
         expect(conflictDetected).to.be.equal(conflictExpected);
       });
@@ -49,7 +52,7 @@ describe('Board', function() {
   describe('Board with major diagonal conflicts', function() {
     verifyConflictTypes(['majorDiagonal', 'queens'], [
       [0, 1, 0, 0],
-      [0, 0, 1, 0],
+      [0, 0, 1, 0],           //THIS ONE!!
       [0, 0, 0, 0],
       [0, 0, 0, 0]
     ]);
