@@ -63,6 +63,7 @@ window.countNRooksSolutions = function(n) {
       }
     }
   };
+  
   pieceAdder(n);
 
   var solutionCount = count; //fixme
@@ -76,20 +77,37 @@ window.findNQueensSolution = function(n) {
   debugger;
   var newBoard = new Board({n: n});
 
+  var columns = new Array(n);
+  var major = new Array(Math.max(2 * n - 1, 0));
+  var minor = new Array(Math.max(2 * n - 1, 0));
+
+  var isInCache = function(row, col) {
+    return columns[col] || major[col - row + n - 1] || minor[row + col];
+  };
+
+  var modifyCache = function(row, col, bool) {
+    columns[col] = bool;
+    major[col - row + n - 1] = bool;
+    minor[row + col] = bool;
+  };
+
   var pieceAdder = function(board, n) {
     if (n === 0) {
       return board;
     } else {
       for (var i = 0; i < board.get('n'); i++) {
-        board.togglePiece(n - 1, i);
-        if (!(board.hasAnyQueenConflictsOn(n - 1, i))) {
+        if (!isInCache(n - 1, i)) {
+          board.togglePiece(n - 1, i);
+          modifyCache(n - 1, i, true);
+
           var result = pieceAdder(board, n - 1);
           if (result !== undefined) {
             return result;
           }
-        }
 
-        board.togglePiece(n - 1, i);
+          board.togglePiece(n - 1, i);
+          modifyCache(n - 1, i, false);
+        }
       }
     }
   };
