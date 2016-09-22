@@ -42,25 +42,28 @@ window.findNRooksSolution = function(n) {
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
 
-  var newBoard = new Board({n: n});
-
+  var board = new Board({n: n});
   var count = 0;
+  var columns = new Array(n);
 
-  var pieceAdder = function(board, n) {
+  var pieceAdder = function(n) { // not passing in board as parameter improved by 300ms
     if (n === 0) {
       count++;
     } else {
       for (var i = 0; i < board.get('n'); i++) {
-        board.togglePiece(n - 1, i);
-        if (!(board.hasColConflictAt(i))) {
-          pieceAdder(board, n - 1);
+        if (!columns[i]) { // column cache reduced from 10s to 42ms
+          board.togglePiece(n - 1, i);
+          columns[i] = true;
+
+          pieceAdder(n - 1);
+
+          board.togglePiece(n - 1, i);
+          columns[i] = false;
         }
-        board.togglePiece(n - 1, i);
       }
     }
   };
-
-  pieceAdder(newBoard, n);
+  pieceAdder(n);
 
   var solutionCount = count; //fixme
 
@@ -103,17 +106,32 @@ window.countNQueensSolutions = function(n) {
 
   var newBoard = new Board({n: n});
 
+  var columns = new Array(n);
+  var major = new Array(Math.max(2 * n - 1, 0));
+  var minor = new Array(Math.max(2 * n - 1, 0));
+
+  var isInCache = function(row, col) {
+    return columns[col] || major[col - row + n - 1] || minor[row + col];
+  };
+
+  var modifyCache = function(row, col, bool) {
+    columns[col] = bool;
+    major[col - row + n - 1] = bool;
+    minor[row + col] = bool;
+  };
+
   var pieceAdder = function(board, n) {
     if (n === 0) {
       solutionCount++;
     } else {
       for (var i = 0; i < board.get('n'); i++) {
-        board.togglePiece(n - 1, i);
-        if (!(board.hasAnyQueenConflictsOn(n - 1, i))) {
+        if (!isInCache(n - 1, i)) { // column cache reduced from 600ms to 144ms
+          board.togglePiece(n - 1, i);
+          modifyCache(n - 1, i, true);
           var result = pieceAdder(board, n - 1);
+          modifyCache(n - 1, i, false);
+          board.togglePiece(n - 1, i);
         }
-
-        board.togglePiece(n - 1, i);
       }
     }
   };
