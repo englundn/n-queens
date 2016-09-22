@@ -18,16 +18,16 @@
 window.findNRooksSolution = function(n) {
 
   var newBoard = new Board({n: n});
+  var columns = new Array(n);
 
   var pieceAdder = function(board, n) {
     if (n === 0) {
       return board;
     }
     for (var i = 0; i < board.get('n'); i ++) {
-      board.togglePiece(n - 1, i);
-      if (board.hasAnyRooksConflicts()) {
-        board.togglePiece(n - 1, i);        
-      } else {
+      if (!columns[i]) {
+        columns[i] = true;
+        board.togglePiece(n - 1, i);
         return pieceAdder(board, n - 1);
       }
     }
@@ -63,7 +63,7 @@ window.countNRooksSolutions = function(n) {
       }
     }
   };
-  
+
   pieceAdder(n);
 
   var solutionCount = count; //fixme
