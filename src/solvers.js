@@ -18,15 +18,15 @@
 window.findNRooksSolution = function(n) {
 
   var newBoard = new Board({n: n});
-  var columns = new Array(n);
+  var columns = 0;
 
   var pieceAdder = function(board, n) {
     if (n === 0) {
       return board;
     }
     for (var i = 0; i < board.get('n'); i ++) {
-      if (!columns[i]) {
-        columns[i] = true;
+      if (!(columns & 1 << i)) {
+        columns += 1 << i;
         board.togglePiece(n - 1, i);
         return pieceAdder(board, n - 1);
       }
@@ -44,21 +44,21 @@ window.countNRooksSolutions = function(n) {
 
   var board = new Board({n: n});
   var count = 0;
-  var columns = new Array(n);
+  var columns = 0;
 
   var pieceAdder = function(n) { // not passing in board as parameter improved by 300ms
     if (n === 0) {
       count++;
     } else {
       for (var i = 0; i < board.get('n'); i++) {
-        if (!columns[i]) { // column cache reduced from 10s to 42ms
+        if (!(columns & 1 << i)) { // column cache reduced from 10s to 42ms
           board.togglePiece(n - 1, i);
-          columns[i] = true;
+          columns += 1 << i;
 
           pieceAdder(n - 1);
 
           board.togglePiece(n - 1, i);
-          columns[i] = false;
+          columns -= 1 << i;
         }
       }
     }
@@ -77,16 +77,16 @@ window.findNQueensSolution = function(n) {
   debugger;
   var newBoard = new Board({n: n});
 
-  var columns = new Array(n);
+  var columns = 0;
   var major = new Array(Math.max(2 * n - 1, 0));
   var minor = new Array(Math.max(2 * n - 1, 0));
 
   var isInCache = function(row, col) {
-    return columns[col] || major[col - row + n - 1] || minor[row + col];
+    return (columns & 1 << col) || major[col - row + n - 1] || minor[row + col];
   };
 
   var modifyCache = function(row, col, bool) {
-    columns[col] = bool;
+    columns = bool ? columns + (1 << col) : columns - (1 << col); 
     major[col - row + n - 1] = bool;
     minor[row + col] = bool;
   };
@@ -124,16 +124,16 @@ window.countNQueensSolutions = function(n) {
 
   var newBoard = new Board({n: n});
 
-  var columns = new Array(n);
+  var columns = 0;
   var major = new Array(Math.max(2 * n - 1, 0));
   var minor = new Array(Math.max(2 * n - 1, 0));
 
   var isInCache = function(row, col) {
-    return columns[col] || major[col - row + n - 1] || minor[row + col];
+    return (columns & 1 << col) || major[col - row + n - 1] || minor[row + col];
   };
 
   var modifyCache = function(row, col, bool) {
-    columns[col] = bool;
+    columns = bool ? columns + (1 << col) : columns - (1 << col); 
     major[col - row + n - 1] = bool;
     minor[row + col] = bool;
   };
