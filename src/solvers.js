@@ -17,64 +17,69 @@
 
 window.findNRooksSolution = function(n) {
 
-  var newBoard = new Board({n: n});
-  var columns = 0;
+  var size = n;
+  var board = new Array(n);
+  var cache = 0;
 
-  var pieceAdder = function(board, n) {
+  var pieceAdder = function(n) {
     if (n === 0) {
       return board;
-    }
-    for (var i = 0; i < board.get('n'); i ++) {
-      if (!(columns & 1 << i)) {
-        columns += 1 << i;
-        board.togglePiece(n - 1, i);
-        return pieceAdder(board, n - 1);
+    } else {
+      board[n - 1] = 1 << size - 1;
+      while (board[n - 1]) {
+        if (!(cache & board[n - 1])) {
+          cache += board[n - 1];
+          return pieceAdder(n - 1);
+          cache -= board[n - 1];
+        }
+        board[n - 1] >>>= 1;
       }
     }
   };
+  
+  var bitIntegerToArray = function(number) {
+    var pad = '00000000';
+    var numberString = number.toString(2);
+    return (pad.slice(0, n - numberString.length) + numberString).split('').map(function(value) {
+      return Number(value);
+    });
+  };
 
-  var solution = pieceAdder(newBoard, n).rows();
-
-  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
-  return solution;
+  return pieceAdder(n).map(bitIntegerToArray);
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
 
-  var board = new Board({n: n});
-  var count = 0;
-  var columns = 0;
+  var size = n;
+  var board = new Array(n);
+  var cache = 0;
+  var counter = 0;
 
-  var pieceAdder = function(n) { // not passing in board as parameter improved by 300ms
+
+  var pieceAdder = function(n) {
+    // debugger;
     if (n === 0) {
-      count++;
+      counter++;
     } else {
-      for (var i = 0; i < board.get('n'); i++) {
-        if (!(columns & 1 << i)) { // column cache reduced from 10s to 42ms
-          board.togglePiece(n - 1, i);
-          columns += 1 << i;
-
+      board[n - 1] = 1 << size - 1;
+      while (board[n - 1]) {
+        if (!(cache & board[n - 1])) {
+          cache += board[n - 1];
           pieceAdder(n - 1);
-
-          board.togglePiece(n - 1, i);
-          columns -= 1 << i;
+          cache -= board[n - 1];
         }
+        board[n - 1] >>>= 1;
       }
     }
   };
 
   pieceAdder(n);
-
-  var solutionCount = count; //fixme
-
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
+  return counter;
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  debugger;
   var newBoard = new Board({n: n});
 
   var columns = 0;
