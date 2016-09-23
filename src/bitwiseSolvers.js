@@ -16,12 +16,22 @@ cache &= ~(1 << i)
 
 
 
+
+
 board = Array(n);
 
 // Helper functions:
 //   Column test
 //   Major diagonal test
+majorCache = 0;
+
+majorCache += 1 << (col - row + n - 1)
+
+
+
 //   Minor diagonal test
+
+
 
 
 //*****countNRooks******
